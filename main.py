@@ -118,7 +118,7 @@ if __name__ == "__main__":
         ids=[f"pair-{i}" for i, pair in enumerate(q_and_a_pairs)],
     )
 
-    question = "How do you monetize?"
+    question = "how can i grow a tiktok following for a consumer app?"
 
     results = collection.query(
         query_texts=[question],
