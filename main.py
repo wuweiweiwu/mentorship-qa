@@ -20,6 +20,8 @@ load_dotenv()
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
+openai.api_key = OPENAI_API_KEY
+
 
 def get_openai_completion(
     messages: List[Dict],
@@ -63,7 +65,7 @@ if __name__ == "__main__":
     q_and_a_pairs = []
 
     comments = soup.find_all(class_="comment-nest-container")
-    for i, comment in comments:
+    for i, comment in enumerate(comments):
         question_body = comment.find(
             class_="initial-comment-container", recursive=False
         ).find(class_="full-post-body")
@@ -109,16 +111,40 @@ if __name__ == "__main__":
         #     # where_document={"$contains":"search_string"}  # optional filter
         # )
 
-        collection.add(
-            documents=[json.dump(pair) for pair in q_and_a_pairs],
-            ids=[pair.id for pair in q_and_a_pairs],
-        )
+    # print(q_and_a_pairs)
 
-        results = collection.query(
-            query_texts=["What is PLG?"],
-            n_results=2,
-            # where={"metadata_field": "is_equal_to_this"}, # optional filter
-            # where_document={"$contains":"search_string"}  # optional filter
-        )
+    collection.add(
+        documents=[json.dumps(pair, indent=2) for pair in q_and_a_pairs],
+        ids=[f"pair-{i}" for i, pair in enumerate(q_and_a_pairs)],
+    )
 
-        print(results)
+    question = "How do you monetize?"
+
+    results = collection.query(
+        query_texts=[question],
+        n_results=2,
+        include=["documents"]
+        # where={"metadata_field": "is_equal_to_this"}, # optional filter
+        # where_document={"$contains":"search_string"}  # optional filter
+    )
+
+    # print(
+    #     json.dumps(results, indent=2),
+    # )
+
+    messages = [
+        {
+            "role": "system",
+            "content": f"You are a mentor with the following intro blurb. You are tasked with answering questions about your expertise. Be as helpful as possible! Be as specific as possible to your own experiences from your intro\n\n intro:\n\n{intro}",
+        }
+    ]
+
+    for document_str in results["documents"][0]:
+        document = json.loads(document_str)
+        messages.append({"role": "user", "content": document["question"]})
+        messages.append({"role": "assistant", "content": document["answer"]})
+
+    messages.append({"role": "user", "content": question})
+
+    response = get_openai_completion(messages)["message"]["content"]
+    print(response)
