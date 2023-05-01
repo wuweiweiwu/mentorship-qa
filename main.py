@@ -46,9 +46,8 @@ def get_openai_completion(
 
 
 # if __name__ == "__main__":
-def main(mentee_question):
-    URL = "https://elpha.com/posts/tfveek4e/office-hours-i-am-growth-solopreneur-helping-companies-build-product-led-growth-plg-models-i-m-elena-verna-ama"
-    page = requests.get(URL)
+def main(mentee_question, url):
+    page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
 
     author = soup.find(class_="byline-text").find("a").text.strip()
@@ -153,8 +152,10 @@ def main(mentee_question):
     # print(response)
 
 
+url = st.text_input("AMA url")
+
 text_input = st.text_input("Ask a question")
 
-ans = main(text_input)
+ans = main(text_input, url)
 
 st.write(ans)
