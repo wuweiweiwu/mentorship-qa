@@ -45,7 +45,8 @@ def get_openai_completion(
             time.sleep(10)  # Wait 10 seconds and try again
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
+def main(mentee_question):
     URL = "https://elpha.com/posts/tfveek4e/office-hours-i-am-growth-solopreneur-helping-companies-build-product-led-growth-plg-models-i-m-elena-verna-ama"
     page = requests.get(URL)
     soup = BeautifulSoup(page.content, "html.parser")
@@ -118,10 +119,10 @@ if __name__ == "__main__":
         ids=[f"pair-{i}" for i, pair in enumerate(q_and_a_pairs)],
     )
 
-    question = "how can i grow a tiktok following for a consumer app?"
+    # question = "how can i grow a tiktok following for a consumer app?"
 
     results = collection.query(
-        query_texts=[question],
+        query_texts=[mentee_question],
         n_results=2,
         include=["documents"]
         # where={"metadata_field": "is_equal_to_this"}, # optional filter
@@ -135,7 +136,7 @@ if __name__ == "__main__":
     messages = [
         {
             "role": "system",
-            "content": f"You are a mentor with the following intro blurb. You are tasked with answering questions about your expertise. Be as helpful as possible! Be as specific as possible to your own experiences from your intro\n\n intro:\n\n{intro}",
+            "content": f"You are a mentor with the following intro blurb. You are tasked with answering questions about your expertise. Be as helpful as possible! Take on the mannerisms and persona of the person described in the intro. Be as specific as possible to your own experiences from your intro\n\n intro:\n\n{intro}",
         }
     ]
 
@@ -144,7 +145,16 @@ if __name__ == "__main__":
         messages.append({"role": "user", "content": document["question"]})
         messages.append({"role": "assistant", "content": document["answer"]})
 
-    messages.append({"role": "user", "content": question})
+    messages.append({"role": "user", "content": mentee_question})
 
     response = get_openai_completion(messages)["message"]["content"]
-    print(response)
+
+    return response
+    # print(response)
+
+
+text_input = st.text_input("Ask a question")
+
+ans = main(text_input)
+
+st.write(ans)
